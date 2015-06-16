@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="NaoJava">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/qimessaging-2.1.2.17-linux64.jar!/" />
+      <root url="jar://$PROJECT_DIR$/qimessaging-2.1.2.17-mac64.jar!/" />
+      <root url="jar://$PROJECT_DIR$/qimessaging-helper.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
