@@ -15,55 +15,62 @@ public class Welcome {
 
     private static String PORT ="9559";
     private static String IP ="192.168.1.25";
-    private static ALLandMarkDetection markProxy;
 
-    public static void main(String[] args) throws Exception {
+    Session session;
 
-        Session session = new Session();
-        Future<Void> future = session.connect("tcp://" + IP + ":" + PORT);
+    ALLandMarkDetection markProxy;
+    ALTextToSpeech tts;
+    ALMotion motion;
+    ALRobotPosture posture;
+    ALMemory memProxy;
+
+    public void main(String[] args) throws Exception {
+
+        // Init session & connexion
+        this.session        = new Session();
+        Future<Void> future = this.session.connect("tcp://" + IP + ":" + PORT);
         future.get();
 
-        ALTextToSpeech tts = new ALTextToSpeech(session);
-        ALMotion motion = new ALMotion(session);
-        ALRobotPosture posture = new ALRobotPosture(session);
+        // Init nao features
+        this.tts     = new ALTextToSpeech(session);
+        this.motion  = new ALMotion(session);
+        this.posture = new ALRobotPosture(session);
 
-        tts.setLanguage("French");
 
-        markProxy = new ALLandMarkDetection(session);
-        markProxy.subscribe("LandmarkDetected", 500, (float) 0.0);
-        ALMemory memProxy = new ALMemory(session);
+        this.tts.setLanguage("French");
+        this.motion.wakeUp();
 
-        tts.say("En attente de détection ...");
-        Object data = memProxy.getData("LandmarkDetected");
+        this.markProxy = new ALLandMarkDetection(session);
 
-        while(data.toString()=="[]") {
+        int detectedLandmark = this.detectLandmark();
 
-            markProxy.subscribe("LandmarkDetected", 500, (float) 0.0);
-            data = memProxy.getData("LandmarkDetected");
+        this.tts.say("Landmark " + detectedLandmark + " détecté !");
 
-            if(data.toString() != "[]") {
-                String values = data.toString();
-                String[] results = values.split(",");
-                int id = Integer.parseInt(results[8].replace("[", "").replace("]", "").replace(" ",""));
-                System.out.println(id);
-                tts.say("J'ai détecté le numéro "+id);
-            }
-        }
-        /*
-        System.out.println(data);
-        if (data.toString()=="[]") {
-            tts.say("Je n'ai rien détecté");
-        } else{
-            String values = data.toString();
-            String[] results = values.split(",");
-            int id = Integer.parseInt(results[8].replace("[", "").replace("]", "").replace(" ",""));
-            System.out.println(id);
-            tts.say("J'ai détecté le numéro "+id);
-        }
-        */
     }
 
 
+    public int detectLandmark() throws Exception {
 
-    //motion.wakeUp();
+        this.markProxy.subscribe("LandmarkDetected", 500, (float) 0.0);
+        this.memProxy = new ALMemory(session);
+
+        this.tts.say("En attente de détection ...");
+        Object dataLandmark = memProxy.getData("LandmarkDetected");
+
+        while(dataLandmark.toString()=="[]") {
+
+            this.markProxy.subscribe("LandmarkDetected", 500, (float) 0.0);
+            dataLandmark = memProxy.getData("LandmarkDetected");
+
+            if(dataLandmark.toString() != "[]") {
+                String values = dataLandmark.toString();
+                String[] results = values.split(",");
+                int id = Integer.parseInt(results[8].replace("[", "").replace("]", "").replace(" ",""));
+                return id;
+            }
+        }
+
+        return 0;
+    }
+
 }
