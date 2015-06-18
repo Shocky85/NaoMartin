@@ -11,7 +11,7 @@ import java.io.OutputStream;
 public class Nao {
 
     private static String PORT = "9559";
-    private static String IP   = "192.168.1.25";
+    private static String IP   = "172.16.6.117";
 
     static Session session;
 
@@ -19,7 +19,7 @@ public class Nao {
     static ALTextToSpeech tts;
     static ALMotion motion;
     static ALRobotPosture posture;
-    ALMemory memProxy;
+    static ALMemory memProxy;
 
     public static void main(String[] args) throws Exception {
 
@@ -32,16 +32,35 @@ public class Nao {
         tts     = new ALTextToSpeech(session);
         motion  = new ALMotion(session);
         posture = new ALRobotPosture(session);
-
+        int detectedLandmark = 0;
 
         tts.setLanguage("French");
         tts.say("Bonjour la France !");
         // motion.wakeUp();
 
-        // markProxy = new ALLandMarkDetection(session);
+         markProxy = new ALLandMarkDetection(session);
+        markProxy.subscribe("LandmarkDetected", 500, (float) 0.0);
+        memProxy = new ALMemory(session);
 
-        // int detectedLandmark = this.detectLandmark();
-        // tts.say("Landmark " + detectedLandmark + " détecté !");
+        tts.say("En attente de détection");
+        Object dataLandmark = memProxy.getData("LandmarkDetected");
+
+        System.out.println(dataLandmark.toString());
+        while(dataLandmark.toString()=="[]") {
+
+
+            markProxy.subscribe("LandmarkDetected", 500, (float) 0.0);
+            dataLandmark = memProxy.getData("LandmarkDetected");
+
+            if(dataLandmark.toString() != "[]") {
+                String values = dataLandmark.toString();
+                String[] results = values.split(",");
+                int id = Integer.parseInt(results[8].replace("[", "").replace("]", "").replace(" ",""));
+                detectedLandmark=id;
+            }
+        }
+        //int detectedLandmark = detectLandmark();
+         tts.say("Landmark " + detectedLandmark + " détecté !");
 
 
         NodeService sender = new NodeService();
@@ -51,17 +70,19 @@ public class Nao {
     }
 
 
-    public int detectLandmark() throws Exception {
+    public static int detectLandmark() throws Exception {
 
-        this.markProxy.subscribe("LandmarkDetected", 500, (float) 0.0);
-        this.memProxy = new ALMemory(session);
+        markProxy.subscribe("LandmarkDetected", 500, (float) 0.0);
+        memProxy = new ALMemory(session);
 
-        this.tts.say("En attente de détection ...");
+        tts.say("En attente de détection");
         Object dataLandmark = memProxy.getData("LandmarkDetected");
 
+        System.out.println(dataLandmark.toString());
         while(dataLandmark.toString()=="[]") {
 
-            this.markProxy.subscribe("LandmarkDetected", 500, (float) 0.0);
+
+            markProxy.subscribe("LandmarkDetected", 500, (float) 0.0);
             dataLandmark = memProxy.getData("LandmarkDetected");
 
             if(dataLandmark.toString() != "[]") {
