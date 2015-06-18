@@ -12,12 +12,14 @@ public class Nao {
 
     static Session session;
 
-    static ALLandMarkDetection markProxy;
     static ALTextToSpeech tts;
     static ALMotion motion;
     static ALRobotPosture posture;
-    static ALMemory memProxy;
+    static ALLandMarkDetection markProxy;
     static NaoSpeech speech;
+    static NodeService sender;
+    static ALMemory memProxy;
+
 
     public static void main(String[] args) throws Exception {
 
@@ -27,34 +29,51 @@ public class Nao {
         future.get();
 
         // Init nao features
-        tts     = new ALTextToSpeech(session);
-        motion  = new ALMotion(session);
-        posture = new ALRobotPosture(session);
-        speech  = new NaoSpeech();
-        int detectedLandmark = 0;
-        tts.setLanguage("French");
-        tts.say("Bonjour et bienvenue à l'office de tourisme !");
-        // motion.wakeUp();
+        tts       = new ALTextToSpeech(session);
+        motion    = new ALMotion(session);
+        posture   = new ALRobotPosture(session);
         markProxy = new ALLandMarkDetection(session);
+        speech    = new NaoSpeech();
+        sender    = new NodeService();
+
+        // Init variables
+        int detectedLandmark = 0;
+
+        tts.setLanguage("French");
+
+        tts.say("Bonjour je m'appelle Martin. Bienvenue à l'office de tourisme !");
+        motion.setBreathEnabled("Body", true);
+
+
         while(detectedLandmark == 0) {
+
             detectedLandmark = detectLandmark();
-            tts.say("Landmark " + detectedLandmark + " détecté !");
-            NodeService sender = new NodeService();
-            int exit = sender.get("/page/" + detectedLandmark);
-            presentDestination(detectedLandmark);
-            System.out.println(exit);
-            detectedLandmark = 0;
+
+            if(detectedLandmark != 0) {
+                tts.say("J'ai détecté le lieu numéro " + detectedLandmark);
+                sender.get("/page/" + detectedLandmark);
+                presentDestination(detectedLandmark);
+                detectedLandmark = 0;
+            }
         }
     }
 
 
     public static int detectLandmark() throws Exception {
+
         markProxy.subscribe("LandmarkDetected", 500, (float) 0.0);
         memProxy = new ALMemory(session);
-        tts.say("En attente de détection");
+
         Object dataLandmark = memProxy.getData("LandmarkDetected");
-        System.out.println(dataLandmark.toString());
+
+        int timeToSpeak = 1000;
         while(dataLandmark.toString()=="[]") {
+
+            if(timeToSpeak == 1000) {
+                tts.say("Présentez moi un marqueur");
+                timeToSpeak = 0;
+            }
+
             markProxy.subscribe("LandmarkDetected", 500, (float) 0.0);
             dataLandmark = memProxy.getData("LandmarkDetected");
 
@@ -64,28 +83,39 @@ public class Nao {
                 int id = Integer.parseInt(results[8].replace("[", "").replace("]", "").replace(" ",""));
                 return id;
             }
+
+            ++timeToSpeak;
         }
 
         return 0;
     }
 
-    public static void presentDestination(int id) throws Exception{
+    public static void presentDestination(int id) throws Exception {
+
+        String text;
+
         switch(id) {
             case 170:
-                tts.say(speech.getValleedessinges());
+                text = speech.getValleedessinges();
                 break;
             case 130:
-                tts.say(speech.getPuydufou());
+                text = speech.getPuydufou();
                 break;
             case 68:
-                tts.say(speech.getZoodelafleche());
+                text = speech.getZoodelafleche();
                 break;
             case 187:
-                tts.say(speech.getPlanetesauvage());
+                text = speech.getPlanetesauvage();
                 break;
             default:
-                tts.say("Destination inconnue !");
+                text = "Lieu inconnu !";
                 break;
         }
+
+        motion.wakeUp();
+        motion.setBreathEnabled("Body", true);
+        tts.say(text);
+        motion.setBreathEnabled("Body", false);
+        motion.rest();
     }
 }
