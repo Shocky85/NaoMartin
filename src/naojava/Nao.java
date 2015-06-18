@@ -33,7 +33,7 @@ public class Nao {
         speech  = new NaoSpeech();
         int detectedLandmark = 0;
         tts.setLanguage("French");
-        tts.say("Bonjour la France !");
+        tts.say("Bonjour et bienvenue à l'office de tourisme !");
         // motion.wakeUp();
         markProxy = new ALLandMarkDetection(session);
         while(detectedLandmark == 0) {
