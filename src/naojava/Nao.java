@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package naojava;
 
 import com.aldebaran.qimessaging.Future;
@@ -11,40 +6,47 @@ import com.aldebaran.qimessaging.helpers.al.ALMotion;
 import com.aldebaran.qimessaging.helpers.al.ALRobotPosture;
 import com.aldebaran.qimessaging.helpers.al.*;
 
-public class Welcome {
+import java.io.OutputStream;
 
-    private static String PORT ="9559";
-    private static String IP ="192.168.1.25";
+public class Nao {
 
-    Session session;
+    private static String PORT = "9559";
+    private static String IP   = "192.168.1.25";
 
-    ALLandMarkDetection markProxy;
-    ALTextToSpeech tts;
-    ALMotion motion;
-    ALRobotPosture posture;
+    static Session session;
+
+    static ALLandMarkDetection markProxy;
+    static ALTextToSpeech tts;
+    static ALMotion motion;
+    static ALRobotPosture posture;
     ALMemory memProxy;
 
-    public void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
 
         // Init session & connexion
-        this.session        = new Session();
-        Future<Void> future = this.session.connect("tcp://" + IP + ":" + PORT);
+        session        = new Session();
+        Future<Void> future = session.connect("tcp://" + IP + ":" + PORT);
         future.get();
 
         // Init nao features
-        this.tts     = new ALTextToSpeech(session);
-        this.motion  = new ALMotion(session);
-        this.posture = new ALRobotPosture(session);
+        tts     = new ALTextToSpeech(session);
+        motion  = new ALMotion(session);
+        posture = new ALRobotPosture(session);
 
 
-        this.tts.setLanguage("French");
-        this.motion.wakeUp();
+        tts.setLanguage("French");
+        tts.say("Bonjour la France !");
+        // motion.wakeUp();
 
-        this.markProxy = new ALLandMarkDetection(session);
+        // markProxy = new ALLandMarkDetection(session);
 
-        int detectedLandmark = this.detectLandmark();
+        // int detectedLandmark = this.detectLandmark();
+        // tts.say("Landmark " + detectedLandmark + " détecté !");
 
-        this.tts.say("Landmark " + detectedLandmark + " détecté !");
+
+        NodeService sender = new NodeService();
+        int exit = sender.get("/page/1");
+        System.out.println(exit);
 
     }
 
