@@ -9,7 +9,7 @@ import java.net.URL;
 
 public class NodeService {
 
-    private String apiUrl = "http://192.168.145.1:3000";
+    private String apiUrl = "http://172.16.113.106";
 
     protected int get(String path) throws IOException {
         HttpURLConnection con = sendData(path, "GET");
@@ -27,29 +27,16 @@ public class NodeService {
     }
 
     private void sendGet() throws Exception {
-
         URL obj = new URL(apiUrl);
         HttpURLConnection con = (HttpURLConnection)obj.openConnection();
-
-        // optional default is GET
         con.setRequestMethod("GET");
-
-        int responseCode = con.getResponseCode();
-        System.out.println("\nSending 'GET' request to URL : " + apiUrl);
-        System.out.println("Response Code : " + responseCode);
-
         BufferedReader in = new BufferedReader(
-                new InputStreamReader(con.getInputStream()));
+        new InputStreamReader(con.getInputStream()));
         String inputLine;
         StringBuffer response = new StringBuffer();
-
         while ((inputLine = in.readLine()) != null) {
             response.append(inputLine);
         }
         in.close();
-
-        //print result
-        System.out.println(response.toString());
-
     }
 }
