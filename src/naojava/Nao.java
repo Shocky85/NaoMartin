@@ -1,19 +1,17 @@
 package naojava;
 
-import com.aldebaran.qimessaging.Future;
-import com.aldebaran.qimessaging.Session;
-import com.aldebaran.qimessaging.helpers.al.ALMotion;
-import com.aldebaran.qimessaging.helpers.al.ALRobotPosture;
+import com.aldebaran.qimessaging.*;
 import com.aldebaran.qimessaging.helpers.al.*;
 
-import java.io.OutputStream;
+import java.lang.Object;
 
 public class Nao {
 
     private static String PORT = "9559";
-    private static String IP   = "192.168.1.25";
+    private static String IP   = "172.16.113.110";
 
     static Session session;
+    static Application app;
 
     static ALLandMarkDetection markProxy;
     static ALTextToSpeech tts;
@@ -24,9 +22,11 @@ public class Nao {
     public static void main(String[] args) throws Exception {
 
         // Init session & connexion
-        session        = new Session();
-        Future<Void> future = session.connect("tcp://" + IP + ":" + PORT);
-        future.get();
+        app     = new Application(args);
+        session = new Session();
+        Future<Void> fut = session.connect("tcp://172.16.6.117:9559");
+        fut.get();
+
 
         // Init nao features
         tts     = new ALTextToSpeech(session);
