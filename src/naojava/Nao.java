@@ -35,15 +35,16 @@ public class Nao {
         markProxy = new ALLandMarkDetection(session);
         speech    = new NaoSpeech();
         sender    = new NodeService();
+        memProxy  = new ALMemory(session);
 
         // Init variables
         int detectedLandmark = 0;
 
+        motion.rest();
         tts.setLanguage("French");
-
-        tts.say("Bonjour je m'appelle Martin. Bienvenue à l'office de tourisme !");
+        tts.setVolume((float)0.2);
+        tts.say("Bonjour je m'appelle NaoMartin. Bienvenue à l'office de tourisme !");
         motion.setBreathEnabled("Body", true);
-
 
         while(detectedLandmark == 0) {
 
@@ -62,14 +63,12 @@ public class Nao {
     public static int detectLandmark() throws Exception {
 
         markProxy.subscribe("LandmarkDetected", 500, (float) 0.0);
-        memProxy = new ALMemory(session);
-
         Object dataLandmark = memProxy.getData("LandmarkDetected");
-
-        int timeToSpeak = 1000;
+        int timeToSpeak = 100;
+        System.out.println(dataLandmark.toString());
         while(dataLandmark.toString()=="[]") {
-
-            if(timeToSpeak == 1000) {
+            if(timeToSpeak == 100) {
+                System.out.println("interaction");
                 tts.say("Présentez moi un marqueur");
                 timeToSpeak = 0;
             }

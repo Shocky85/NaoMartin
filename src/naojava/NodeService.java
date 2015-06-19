@@ -6,7 +6,7 @@ import java.net.URL;
 
 public class NodeService {
 
-    private String apiUrl = "http://172.16.113.106";
+    private String apiUrl = "http://172.16.113.168";
 
     protected int get(String path) throws IOException {
         HttpURLConnection con = sendData(path, "GET");
